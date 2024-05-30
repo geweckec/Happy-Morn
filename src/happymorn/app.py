@@ -43,14 +43,17 @@ class HappyMorning(toga.App):
 
     def say_hello(self, widget):
         with httpx.Client() as client:
-            response= client.get(f"https://www.themealdb.com/api/json/v1/1/filter.php?i={self.name_input}")
+            response= client.get(f"https://www.themealdb.com/api/json/v1/1/filter.php?i={self.name_input.value}")
 
-        meals = []
-        js = json.loads(response.text)
-        for meal in js["meals"]:
-            meals.append(meal["strMeal"])
-
-        self.main_window.info_dialog(greeting(self.name_input.value), meals,)
+        payload = response.json()
+        if payload["meals"]:
+            meals = []
+            for i in range(0,len(payload["meals"])):
+                meals.append(payload["meals"][i]["strMeal"])
+            stringy = ("\n".join(meals))
+            self.main_window.info_dialog(greeting(self.name_input.value), stringy,)
+        else:
+            self.main_window.info_dialog(greeting(self.name_input.value), "No recipes available",)
 
 
 def main():
