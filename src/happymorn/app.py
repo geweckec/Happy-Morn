@@ -6,7 +6,7 @@ import toga
 import httpx
 from toga.style import Pack
 from toga.style.pack import COLUMN, ROW
-
+import threading
 
 #def donetiming(name):
     #if name:
