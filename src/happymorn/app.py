@@ -8,155 +8,164 @@ from toga.style import Pack
 from toga.style.pack import COLUMN, ROW
 import threading
 
-#def donetiming(name):
-    #if name:
-        #return "Bzzzzzz!"
-    #else:
-        #return "No time entered"
-
-class CountdownApp(toga.App):
-    def startup(self):
-        main_box = toga.Box(style=Pack(direction=COLUMN, padding=(0,5)))
-        self.timey = toga.Label('00:00', style=Pack(padding=10))
-        time_label = toga.Label("Enter time in seconds: ", style=Pack(padding=10))
-        self.time_input = toga.TextInput(style=Pack(flex=1))
-        name_box = toga.Box(style=Pack(direction=ROW, padding=5))
-        name_box.add(time_label)
-        name_box.add(self.time_input)
-
-        instant = Questions
-        gobackbutton = toga.Button("Go Back",on_press=instant.startup,style=Pack(padding=5),)
-
-        self.start_button = toga.Button('Start', on_press=self.start_timer, style=Pack(padding=10))
-        self.stop_button = toga.Button('Stop', on_press=self.stop_timer, style=Pack(padding=10))
-
-        main_box.add(name_box)
-        main_box.add(self.timey)
-        main_box.add(self.start_button)
-        main_box.add(self.stop_button)
-        main_box.add(gobackbutton)
-
-        self.main_window = toga.MainWindow(title=self.name)
-        self.main_window.content = main_box
-        self.main_window.show()
-
-        self.timer = None
-        self.time_remaining = 0
-
-    def start_timer(self, widget):
-
-        self.time_remaining = int(self.time_input.value) # Set initial time here (in seconds)
-        self.update_timey()
-        self.timer = threading.Timer(1, self.update_timer)
-        self.timer.start()
-
-    def stop_timer(self, widget):
-        if self.timer:
-            self.timer.cancel()
-
-    def update_timer(self):
-        self.time_remaining -= 1
-        if self.time_remaining <= 0:
-            self.time_remaining = 0
-            #elf.done,style=Pack(padding=5)
-        self.update_timey()
-        if self.time_remaining > 0:
-            self.timer = threading.Timer(1, self.update_timer)
-            self.timer.start()
-
-    def update_timey(self):
-        minutes = int(self.time_remaining) // 60
-        seconds = int(self.time_remaining) % 60
-        self.timey.text = f'{minutes:02}:{seconds:02}'
-
-    #def done(self, widget):
-        #self.main_window.info_dialog(donetiming(self.time_input.value), "Time's Up!",)
-
 def greeting(name):
+    '''displays the following messages on the screen when recipes are generated''' # these messages will be displayed in a pop up screen that is called later
     if name:
         return "Here are your recipes!"
     else:
         return "No recipes can be created"
 def greeting2(name):
+    '''displays the following messages on the screen when outfit colors are generated'''
     if name:
         return "Here are the colors for your outfit!"
     else:
         return "No colors can be generated"
 
 class HappyMorning(toga.App):
+    '''This class generates recipes for the user'''
     def startup(self):
-        main_box = toga.Box(style=Pack(direction=COLUMN))
+        '''This method sets up the screen for the recipe portion of the app and allows user to enter an ingredient'''
+        main_box = toga.Box(style=Pack(direction=COLUMN)) #sets up main screen
 
         name_label = toga.Label(
             "Recipe Ingredient: ",
             style=Pack(padding=(0, 5)),
-        )
-        self.name_input = toga.TextInput(style=Pack(flex=1))
+        ) # prompt for user to answer
+        self.name_input = toga.TextInput(style=Pack(flex=1)) #allows user to input an answer in the name_label box created above
         
         instant = Questions
-        gobackbutton = toga.Button("Go Back",on_press=instant.startup,style=Pack(padding=5),)
+        gobackbutton = toga.Button("Go Back",on_press=instant.startup,style=Pack(padding=5),) # creates a go back button so the user can return to home screen
 
         name_box = toga.Box(style=Pack(direction=ROW, padding=5))
         name_box.add(name_label)
         name_box.add(self.name_input)
+        # creates a box for the user to input on the main screen and then adds the prompt and the user answer
 
         button = toga.Button(
             "Make Recipes!",
             on_press=self.say_hello,
             style=Pack(padding=5),
-        )
+        ) #when the user selects this putton, it will run the say hello function which find recipes
 
         main_box.add(name_box)
         main_box.add(button)
         main_box.add(gobackbutton)
+        # adds all the buttons and input box + prompt to the main screen
 
         self.main_window = toga.MainWindow(title=self.formal_name)
         self.main_window.content = main_box
         self.main_window.show()
+        # the above code worked very similarly to the startup code above and then displayed all those features in the main screen
 
     def say_hello(self, widget):
+        '''this method uses an API to get recipes related to the inputted ingredient and then displays those recipes'''
         with httpx.Client() as client:
-            response= client.get(f"https://www.themealdb.com/api/json/v1/1/filter.php?i={self.name_input.value}")
+            response= client.get(f"https://www.themealdb.com/api/json/v1/1/filter.php?i={self.name_input.value}") #gets API
 
-        payload = response.json()
+        payload = response.json() # loads data from API
         if payload["meals"]:
             meals = []
             for i in range(0,len(payload["meals"])):
                 meals.append(payload["meals"][i]["strMeal"])
-            stringy = ("\n".join(meals))
-            self.main_window.info_dialog(greeting(self.name_input.value), stringy,)
+            stringy = ("\n".join(meals)) #extracts recipe names from API
+            self.main_window.info_dialog(greeting(self.name_input.value), stringy,) #calls greeting function above and underneath the text from the greeting function will print the list of recipes
         else:
             self.main_window.info_dialog(greeting(self.name_input.value), "No recipes available",)
 
+class CountdownApp(toga.App):
+    '''This class controls the countdown timer feature of our app.'''
+    def startup(self):
+        '''this method of the countdown class sets the screen for our countdown section of our app and allows the user to enter the time'''
+        main_box = toga.Box(style=Pack(direction=COLUMN, padding=(0,5)))
+        self.timey = toga.Label('00:00', style=Pack(padding=10))
+        time_label = toga.Label("Enter time in seconds: ", style=Pack(padding=10)) #sets up box for user to input time in
+        self.time_input = toga.TextInput(style=Pack(flex=1))
+        name_box = toga.Box(style=Pack(direction=ROW, padding=5))
+        name_box.add(time_label)
+        name_box.add(self.time_input)
+
+        instant = Questions
+        gobackbutton = toga.Button("Go Back",on_press=instant.startup,style=Pack(padding=5),) #sets up a button that takes user back to home screen
+
+        self.start_button = toga.Button('Start', on_press=self.start_timer, style=Pack(padding=10)) #button that starts timer
+        self.stop_button = toga.Button('Stop', on_press=self.stop_timer, style=Pack(padding=10)) #button that stops timer
+
+        main_box.add(name_box)
+        main_box.add(self.timey)
+        main_box.add(self.start_button)
+        main_box.add(self.stop_button)
+        main_box.add(gobackbutton)
+    # the above section adds the buttons and user boxes onto the mainscreen
+        self.main_window = toga.MainWindow(title=self.name)
+        self.main_window.content = main_box
+        self.main_window.show() #shows main screen with these features
+
+        self.timer = None
+        self.time_remaining = 0
+
+    def start_timer(self, widget):
+        '''this method starts timer'''
+        self.time_remaining = int(self.time_input.value) # Set initial time here
+        self.update_timey()
+        self.timer = threading.Timer(1, self.update_timer)
+        self.timer.start() #starts timer
+
+    def stop_timer(self, widget):
+        '''this method cancels the timer if the user clicks the stop button'''
+        if self.timer:
+            self.timer.cancel() #cancels timer
+
+    def update_timer(self):
+        '''this method updates the timer after each second countdown and makes sure the timer has not reached zero'''
+        self.time_remaining -= 1
+        if self.time_remaining <= 0:
+            self.time_remaining = 0
+        self.update_timey() #updates timer with new time as it counts down
+        if self.time_remaining > 0: #if the time is stil greater than zero the timer will continue to count down
+            self.timer = threading.Timer(1, self.update_timer)
+            self.timer.start()
+
+    def update_timey(self):
+        '''this method updates the visual clock on the screen'''
+        minutes = int(self.time_remaining) // 60
+        seconds = int(self.time_remaining) % 60
+        self.timey.text = f'{minutes:02}:{seconds:02}' #updates the visual count down timer with the new time
+
 
 class Questions(toga.App):
+    '''This class makes the home screen part of the app'''
     def startup(self):
+        '''This method sets up the screen of the home page with three puttons allowing the user to select what class they want to run'''
         main_box = toga.Box(style=Pack(direction=COLUMN))
         
-        name_label = toga.Label("What do you want to do?", style=Pack(padding=(0, 5)),)
+        name_label = toga.Label("What do you want to do?", style=Pack(padding=(0, 5)),) #creates a box asking the user what they want to do
         name_box = toga.Box(style=Pack(direction=ROW, padding=5))
         name_box.add(name_label)
         
         button = toga.Button("Start a Timer", on_press=lambda widget: mainy(CountdownApp), style=Pack(padding=5),)
         button1 = toga.Button("Plan Breakfast", on_press=lambda widget: mainy(HappyMorning), style=Pack(padding=5),)
         button2 = toga.Button("Outfit Color Generator", on_press=lambda widget: mainy(OutfitColors), style=Pack(padding=5),)
-
+        #creates three buttons and when the user selects them, it runs the mainy function
 
         
         main_box.add(name_box)
         main_box.add(button)
         main_box.add(button1)
         main_box.add(button2)
+        # adds all these buttons and text to the main screen
         
-        self.main_window = toga.MainWindow(title="Good Morning!")
+        self.main_window = toga.MainWindow(title="Good Morning!") #title for the main screen
         self.main_window.content = main_box
         self.main_window.show()
     
         def mainy(app):
-            return app()
+            '''returns the app the user selects they want to run'''
+            return app() #when this function is called that specific feature is run
         
 class OutfitColors(toga.App):
+    '''This class controls the outfit color feature of our app'''
     def startup(self):
+        '''This method sets up the screen for the outfit color feature and allows user to input the main color of their outfit'''
         main_box = toga.Box(style=Pack(direction=COLUMN))
 
         name_label = toga.Label(
@@ -187,6 +196,7 @@ class OutfitColors(toga.App):
         self.main_window.show()
 
     def say_hello(self, widget):
+        '''This method uses an API that connects color name to hex code, and then returns complementary colors'''
         color = self.name_input.value
         color_hex_codes = {
             "aliceblue": "F0F8FF",
@@ -347,7 +357,8 @@ class OutfitColors(toga.App):
             self.main_window.info_dialog(greeting2(self.name_input.value), stringy,)
         else:
             self.main_window.info_dialog(greeting2(self.name_input.value), "No colors available, please try again",)
+    #this class runs virtually the same was as the recipe class
+
 def main():
+    '''Runs initial screen'''
     return Questions()
-#if __name__ == '__main__':
-    #main().main_loop()
