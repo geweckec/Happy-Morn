@@ -8,21 +8,29 @@ from toga.style import Pack
 from toga.style.pack import COLUMN, ROW
 import threading
 
-#def donetiming(name):
-    #if name:
-        #return "Bzzzzzz!"
-    #else:
-        #return "No time entered"
+def donetiming(name):
+    if name:
+        return "Bzzzzzz!"
+    else:
+        return "No time entered"
 
 class CountdownApp(toga.App):
     def startup(self):
         main_box = toga.Box(style=Pack(direction=COLUMN, padding=(0,5)))
         self.timey = toga.Label('00:00', style=Pack(padding=10))
-        time_label = toga.Label("Enter time in seconds: ", style=Pack(padding=10))
-        self.time_input = toga.TextInput(style=Pack(flex=1))
+        timer_purpose = toga.Label("Timer Name: ", style=Pack(padding=10))
+        minute_label = toga.Label("Enter time in minutes: ", style=Pack(padding=10))
+        second_label = toga.Label("Enter time in seconds: ", style=Pack(padding=10))
+        self.minute_input = toga.TextInput(style=Pack(flex=1))
+        self.second_input = toga.TextInput(style=Pack(flex=1))
+        self.purpose_input = toga.TextInput(style=Pack(flex=1))
         name_box = toga.Box(style=Pack(direction=ROW, padding=5))
-        name_box.add(time_label)
-        name_box.add(self.time_input)
+        name_box.add(timer_purpose)
+        name_box.add(self.purpose_input)
+        name_box.add(minute_label)
+        name_box.add(self.minute_input)
+        name_box.add(second_label)
+        name_box.add(self.second_input)
 
         instant = Questions
         gobackbutton = toga.Button("Go Back",on_press=instant.startup,style=Pack(padding=5),)
@@ -44,8 +52,15 @@ class CountdownApp(toga.App):
         self.time_remaining = 0
 
     def start_timer(self, widget):
-
-        self.time_remaining = int(self.time_input.value) # Set initial time here (in seconds)
+        if self.minute_input.value:
+            minute_value = int(self.minute_input.value)
+        else:
+            minute_value = 0
+        if self.second_input.value:
+            second_value = int(self.second_input.value)
+        else:
+            second_value = 0
+        self.time_remaining = 60*minute_value + second_value  # Set initial time here (in seconds)
         self.update_timey()
         self.timer = threading.Timer(1, self.update_timer)
         self.timer.start()
@@ -55,22 +70,36 @@ class CountdownApp(toga.App):
             self.timer.cancel()
 
     def update_timer(self):
-        self.time_remaining -= 1
         if self.time_remaining <= 0:
             self.time_remaining = 0
-            #elf.done,style=Pack(padding=5)
-        self.update_timey()
-        if self.time_remaining > 0:
-            self.timer = threading.Timer(1, self.update_timer)
-            self.timer.start()
+            self.done,style=Pack(padding=5)
+        else:
+            self.time_remaining -= 1
+#            if self.time_remaining <= 0:
+#                self.time_remaining = 0
+#                self.done,style=Pack(padding=5)
+            self.update_timey()
+            if self.time_remaining > 0:
+                self.timer = threading.Timer(1, self.update_timer)
+                self.timer.start()
 
     def update_timey(self):
         minutes = int(self.time_remaining) // 60
         seconds = int(self.time_remaining) % 60
-        self.timey.text = f'{minutes:02}:{seconds:02}'
-
-    #def done(self, widget):
-        #self.main_window.info_dialog(donetiming(self.time_input.value), "Time's Up!",)
+        if self.purpose_input.value:
+            purpose = self.purpose_input.value
+        else:
+            purpose = 'Timer'
+        if minutes <= 0 and seconds <= 0:
+            #self.main_window.info_dialog("Bzzzt!", "Time's Up!",)
+            self.timey.text = "Bzzt! Time's up!"
+        else:
+            self.timey.text = f'{purpose}: {minutes:02}:{seconds:02}'
+        
+#    def done(self, widget):
+#        self.main_window.info_dialog("Bzzzt!", "Time's Up!",)
+    def done(self, widget):
+        self.main_window.info_dialog("Bzzzt!", "Time's Up!",)
 
 def greeting(name):
     if name:
