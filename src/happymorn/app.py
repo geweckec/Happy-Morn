@@ -8,12 +8,6 @@ from toga.style import Pack
 from toga.style.pack import COLUMN, ROW
 import threading
 
-def donetiming(name):
-    '''Returns the following messages when called'''
-    if name:
-        return "Bzzzzzz!"
-    else:
-        return "No time entered"
 
 class CountdownApp(toga.App):
     '''This class controls the countdown timer feature of the app'''
@@ -80,18 +74,16 @@ class CountdownApp(toga.App):
         '''this method updates the timer after each second'''
         if self.time_remaining <= 0:
             self.time_remaining = 0
-            self.done,style=Pack(padding=5)
+            #if timer gets to zero, calls the done function to print time's up
         else:
             self.time_remaining -= 1
-#            if self.time_remaining <= 0:
-#                self.time_remaining = 0
-#                self.done,style=Pack(padding=5)
             self.update_timey()
             if self.time_remaining > 0:
                 self.timer = threading.Timer(1, self.update_timer)
-                self.timer.start()
+                self.timer.start() #otherwise updates timer and continues countdown
 
     def update_timey(self):
+        '''this method updates visual timer'''
         minutes = int(self.time_remaining) // 60
         seconds = int(self.time_remaining) % 60
         if self.purpose_input.value:
@@ -99,14 +91,10 @@ class CountdownApp(toga.App):
         else:
             purpose = 'Timer'
         if minutes <= 0 and seconds <= 0:
-            #self.main_window.info_dialog("Bzzzt!", "Time's Up!",)
-            self.timey.text = "Bzzt! Time's up!"
+            self.timey.text = "Bzzt! Time's up!" #if seconds reaches zero, clock will be replaced with the time's up message
         else:
-            self.timey.text = f'{purpose}: {minutes:02}:{seconds:02}'
+            self.timey.text = f'{purpose}: {minutes:02}:{seconds:02}' #updates visual clock
         
-
-    def done(self, widget):
-        self.main_window.info_dialog("Bzzzt!", "Time's Up!",)
 
 def greeting(name):
     '''displays the following messages on the screen when recipes are generated''' # these messages will be displayed in a pop up screen that is called later
@@ -171,65 +159,6 @@ class HappyMorning(toga.App):
             self.main_window.info_dialog(greeting(self.name_input.value), stringy,) #calls greeting function above and underneath the text from the greeting function will print the list of recipes
         else:
             self.main_window.info_dialog(greeting(self.name_input.value), "No recipes available",)
-
-class CountdownApp(toga.App):
-    '''This class controls the countdown timer feature of our app.'''
-    def startup(self):
-        '''this method of the countdown class sets the screen for our countdown section of our app and allows the user to enter the time'''
-        main_box = toga.Box(style=Pack(direction=COLUMN, padding=(0,5)))
-        self.timey = toga.Label('00:00', style=Pack(padding=10))
-        time_label = toga.Label("Enter time in seconds: ", style=Pack(padding=10)) #sets up box for user to input time in
-        self.time_input = toga.TextInput(style=Pack(flex=1))
-        name_box = toga.Box(style=Pack(direction=ROW, padding=5))
-        name_box.add(time_label)
-        name_box.add(self.time_input)
-
-        instant = Questions
-        gobackbutton = toga.Button("Go Back",on_press=instant.startup,style=Pack(padding=5),) #sets up a button that takes user back to home screen
-
-        self.start_button = toga.Button('Start', on_press=self.start_timer, style=Pack(padding=10)) #button that starts timer
-        self.stop_button = toga.Button('Stop', on_press=self.stop_timer, style=Pack(padding=10)) #button that stops timer
-
-        main_box.add(name_box)
-        main_box.add(self.timey)
-        main_box.add(self.start_button)
-        main_box.add(self.stop_button)
-        main_box.add(gobackbutton)
-    # the above section adds the buttons and user boxes onto the mainscreen
-        self.main_window = toga.MainWindow(title=self.name)
-        self.main_window.content = main_box
-        self.main_window.show() #shows main screen with these features
-
-        self.timer = None
-        self.time_remaining = 0
-
-    def start_timer(self, widget):
-        '''this method starts timer'''
-        self.time_remaining = int(self.time_input.value) # Set initial time here
-        self.update_timey()
-        self.timer = threading.Timer(1, self.update_timer)
-        self.timer.start() #starts timer
-
-    def stop_timer(self, widget):
-        '''this method cancels the timer if the user clicks the stop button'''
-        if self.timer:
-            self.timer.cancel() #cancels timer
-
-    def update_timer(self):
-        '''this method updates the timer after each second countdown and makes sure the timer has not reached zero'''
-        self.time_remaining -= 1
-        if self.time_remaining <= 0:
-            self.time_remaining = 0
-        self.update_timey() #updates timer with new time as it counts down
-        if self.time_remaining > 0: #if the time is stil greater than zero the timer will continue to count down
-            self.timer = threading.Timer(1, self.update_timer)
-            self.timer.start()
-
-    def update_timey(self):
-        '''this method updates the visual clock on the screen'''
-        minutes = int(self.time_remaining) // 60
-        seconds = int(self.time_remaining) % 60
-        self.timey.text = f'{minutes:02}:{seconds:02}' #updates the visual count down timer with the new time
 
 
 class Questions(toga.App):
