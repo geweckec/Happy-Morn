@@ -8,6 +8,106 @@ from toga.style import Pack
 from toga.style.pack import COLUMN, ROW
 import threading
 
+def donetiming(name):
+    '''Returns the following messages when called'''
+    if name:
+        return "Bzzzzzz!"
+    else:
+        return "No time entered"
+
+class CountdownApp(toga.App):
+    '''This class controls the countdown timer feature of the app'''
+    def startup(self):
+        '''this method sets up the screen for the timer and allows user to enter the time they want'''
+        main_box = toga.Box(style=Pack(direction=COLUMN, padding=(0,5))) #sets up main screen
+        self.timey = toga.Label('00:00', style=Pack(padding=10)) #sets intial time to zero in a label
+        timer_purpose = toga.Label("Timer Name: ", style=Pack(padding=10))
+        minute_label = toga.Label("Enter time in minutes: ", style=Pack(padding=10))
+        second_label = toga.Label("Enter time in seconds: ", style=Pack(padding=10))
+        #make three labels for the user to enter what the timer is for, minutes, and seconds
+        self.minute_input = toga.TextInput(style=Pack(flex=1))
+        self.second_input = toga.TextInput(style=Pack(flex=1))
+        self.purpose_input = toga.TextInput(style=Pack(flex=1))
+        # allows user to input the above information
+        name_box = toga.Box(style=Pack(direction=ROW, padding=5))
+        name_box.add(timer_purpose)
+        name_box.add(self.purpose_input)
+        name_box.add(minute_label)
+        name_box.add(self.minute_input)
+        name_box.add(second_label)
+        name_box.add(self.second_input)
+        # adds these boxes to screen
+        instant = Questions
+        gobackbutton = toga.Button("Go Back",on_press=instant.startup,style=Pack(padding=5),)
+        # go back button
+        self.start_button = toga.Button('Start', on_press=self.start_timer, style=Pack(padding=10))
+        self.stop_button = toga.Button('Stop', on_press=self.stop_timer, style=Pack(padding=10))
+        # when start is selected, it calls the start timer function and when stop is selected it calls the stop timer function
+        main_box.add(name_box)
+        main_box.add(self.timey)
+        main_box.add(self.start_button)
+        main_box.add(self.stop_button)
+        main_box.add(gobackbutton)
+        # adds to main screen
+        self.main_window = toga.MainWindow(title=self.name)
+        self.main_window.content = main_box
+        self.main_window.show()
+
+        self.timer = None
+        self.time_remaining = 0
+
+    def start_timer(self, widget):
+        '''This method starts the timer'''
+        if self.minute_input.value:
+            minute_value = int(self.minute_input.value) #sets minute value
+        else:
+            minute_value = 0
+        if self.second_input.value:
+            second_value = int(self.second_input.value) # sets second value
+        else:
+            second_value = 0
+        self.time_remaining = 60*minute_value + second_value #initializes the amount of time
+        self.update_timey()
+        self.timer = threading.Timer(1, self.update_timer)
+        self.timer.start()
+
+    def stop_timer(self, widget):
+        '''this method stops timer'''
+        if self.timer:
+            self.timer.cancel() #cancels timer
+
+    def update_timer(self):
+        '''this method updates the timer after each second'''
+        if self.time_remaining <= 0:
+            self.time_remaining = 0
+            self.done,style=Pack(padding=5)
+        else:
+            self.time_remaining -= 1
+#            if self.time_remaining <= 0:
+#                self.time_remaining = 0
+#                self.done,style=Pack(padding=5)
+            self.update_timey()
+            if self.time_remaining > 0:
+                self.timer = threading.Timer(1, self.update_timer)
+                self.timer.start()
+
+    def update_timey(self):
+        minutes = int(self.time_remaining) // 60
+        seconds = int(self.time_remaining) % 60
+        if self.purpose_input.value:
+            purpose = self.purpose_input.value
+        else:
+            purpose = 'Timer'
+        if minutes <= 0 and seconds <= 0:
+            #self.main_window.info_dialog("Bzzzt!", "Time's Up!",)
+            self.timey.text = "Bzzt! Time's up!"
+        else:
+            self.timey.text = f'{purpose}: {minutes:02}:{seconds:02}'
+        
+
+    def done(self, widget):
+        self.main_window.info_dialog("Bzzzt!", "Time's Up!",)
+
 def greeting(name):
     '''displays the following messages on the screen when recipes are generated''' # these messages will be displayed in a pop up screen that is called later
     if name:
